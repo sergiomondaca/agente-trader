@@ -1,0 +1,30 @@
+{
+  "_instrucciones": "Mueve activos de 'watchlist' a 'positions' cuando tengas precio de entrada y cantidad.",
+
+  "positions": [
+    { "symbol": "OKLO",  "exchange": "NYSE",   "screener": "america", "nombre": "Oklo Inc. (Nuclear Energy)",        "cantidad": 16.26,  "precio_promedio": 121.70, "fecha_entrada": "2025-11-05", "notas": "Racional" },
+    { "symbol": "IONQ",  "exchange": "NYSE",   "screener": "america", "nombre": "IonQ Inc. (Quantum Computing)",     "cantidad": 85.39,  "precio_promedio": 66.32,  "fecha_entrada": "2025-10-16", "notas": "Racional" },
+    { "symbol": "COIN",  "exchange": "NASDAQ", "screener": "america", "nombre": "Coinbase Global",                  "cantidad": 9.42,   "precio_promedio": 318.49, "fecha_entrada": "2025-11-10", "notas": "Racional" },
+    { "symbol": "BYND",  "exchange": "NASDAQ", "screener": "america", "nombre": "Beyond Meat",                      "cantidad": 427.50, "precio_promedio": 2.34,   "fecha_entrada": "2025-10-24", "notas": "Racional" },
+    { "symbol": "ORCL",  "exchange": "NYSE",   "screener": "america", "nombre": "Oracle Corporation",               "cantidad": 17.7,   "precio_promedio": 282.48, "fecha_entrada": "2025-10-29", "notas": "Racional" },
+    { "symbol": "IBIT",  "exchange": "NASDAQ", "screener": "america", "nombre": "iShares Bitcoin Trust ETF",        "cantidad": 327.41, "precio_promedio": 45.81,  "fecha_entrada": "2025-11-02", "notas": "Racional" },
+    { "symbol": "MCHP",  "exchange": "NASDAQ", "screener": "america", "nombre": "Microchip Technology",             "cantidad": 124.33, "precio_promedio": 80.43,  "fecha_entrada": "2026-02-19", "notas": "Racional" },
+    { "symbol": "GDX",   "exchange": "AMEX",   "screener": "america", "nombre": "VanEck Gold Miners ETF",           "cantidad": 100,    "precio_promedio": 109.21, "fecha_entrada": "2026-03-03", "notas": "Racional" },
+    { "symbol": "DXYZ",  "exchange": "NYSE",   "screener": "america", "nombre": "Destiny Tech100",                  "cantidad": 89.59,  "precio_promedio": 33.49,  "fecha_entrada": "2026-03-25", "notas": "Racional" },
+    { "symbol": "ACN",   "exchange": "NYSE",   "screener": "america", "nombre": "Accenture plc",                    "cantidad": 15.03,  "precio_promedio": 199.52, "fecha_entrada": "2026-04-02", "notas": "Racional" },
+    { "symbol": "UUUU",  "exchange": "AMEX",   "screener": "america", "nombre": "Energy Fuels Inc. (Uranium)",      "cantidad": 47.67,  "precio_promedio": 20.98,  "fecha_entrada": "2026-04-15", "notas": "Racional" },
+    { "symbol": "NU",    "exchange": "NYSE",   "screener": "america", "nombre": "Nu Holdings (Fintech)",            "cantidad": 129.55, "precio_promedio": 15.44,  "fecha_entrada": "2026-04-16", "notas": "Racional" },
+    { "symbol": "TSM",   "exchange": "NYSE",   "screener": "america", "nombre": "Taiwan Semiconductor (ADR)",       "cantidad": 13.45,  "precio_promedio": 371.60, "fecha_entrada": "2026-04-17", "notas": "Racional" },
+    { "symbol": "NFLX",  "exchange": "NASDAQ", "screener": "america", "nombre": "Netflix",                          "cantidad": 81.92,  "precio_promedio": 104.70, "fecha_entrada": "2026-11-25", "notas": "Racional" },
+    { "symbol": "SMCI",  "exchange": "NASDAQ", "screener": "america", "nombre": "Super Micro Computer",             "cantidad": 18.05,  "precio_promedio": 55.39,  "fecha_entrada": "2025-10-21", "notas": "Racional" },
+    { "symbol": "PLTR",  "exchange": "NASDAQ", "screener": "america", "nombre": "Palantir Technologies",            "cantidad": 16.26,  "precio_promedio": 121.70, "fecha_entrada": "2025-09-05", "notas": "Racional" }
+  ],
+
+  "watchlist": [
+    { "symbol": "UBER",  "exchange": "NYSE",   "screener": "america", "nombre": "Uber Technologies" },
+    { "symbol": "SMR",   "exchange": "NYSE",   "screener": "america", "nombre": "NuScale Power (Nuclear SMR)" },
+    { "symbol": "SE",    "exchange": "NYSE",   "screener": "america", "nombre": "Sea Limited" },
+    { "symbol": "GLD",   "exchange": "AMEX",   "screener": "america", "nombre": "SPDR Gold Shares ETF" },
+    { "symbol": "SLV",   "exchange": "AMEX",   "screener": "america", "nombre": "iShares Silver Trust ETF" }
+  ]
+}
