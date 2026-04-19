@@ -1009,7 +1009,62 @@ def analyze_watchlist() -> dict:
 
 
 # ─────────────────────────────────────────────────────────────
-# HERRAMIENTA 9: Análisis Fundamental (Yahoo Finance)
+# HERRAMIENTA 9: Historial de consultas
+# ─────────────────────────────────────────────────────────────
+def get_historial(fecha: str = None, ultimas_n: int = 10) -> dict:
+    """
+    Lee el historial de consultas guardadas en la carpeta historial/.
+    Permite ver qué análisis se hicieron en días anteriores.
+    """
+    from pathlib import Path
+
+    historial_dir = Path(__file__).parent / "historial"
+
+    if not historial_dir.exists():
+        return {"info": "No hay historial guardado todavía."}
+
+    archivos = sorted(historial_dir.glob("*.json"), reverse=True)
+    if not archivos:
+        return {"info": "No hay historial guardado todavía."}
+
+    if fecha:
+        # Buscar archivo de fecha específica
+        target = historial_dir / f"{fecha}.json"
+        if not target.exists():
+            fechas_disponibles = [a.stem for a in archivos]
+            return {
+                "error": f"No hay historial para la fecha {fecha}.",
+                "fechas_disponibles": fechas_disponibles[:10],
+            }
+        archivos = [target]
+    else:
+        archivos = archivos[:7]  # últimos 7 días por defecto
+
+    resultado = {}
+    for archivo in archivos:
+        try:
+            entries = json.loads(archivo.read_text(encoding="utf-8"))
+            resultado[archivo.stem] = [
+                {
+                    "hora":         e.get("hora"),
+                    "consulta":     e.get("consulta"),
+                    "tools_usadas": e.get("tools_usadas", []),
+                    "tokens":       e.get("tokens", {}),
+                    "respuesta_resumen": (e.get("respuesta") or "")[:300] + "..." if e.get("respuesta") else "",
+                }
+                for e in entries[-ultimas_n:]
+            ]
+        except Exception:
+            continue
+
+    return {
+        "historial": resultado,
+        "total_dias": len(resultado),
+    }
+
+
+# ─────────────────────────────────────────────────────────────
+# HERRAMIENTA 10: Análisis Fundamental (Yahoo Finance)
 # ─────────────────────────────────────────────────────────────
 def get_fundamental_analysis(symbol: str, exchange: str) -> dict:
     """

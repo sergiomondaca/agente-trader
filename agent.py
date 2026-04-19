@@ -23,6 +23,7 @@ from tools import (
     analyze_watchlist,
     screen_stocks,
     get_fundamental_analysis,
+    get_historial,
 )
 
 load_dotenv()
@@ -214,6 +215,31 @@ TOOLS = [
         }
     },
     {
+        "name": "get_historial",
+        "description": (
+            "Lee el historial de consultas anteriores guardadas localmente. "
+            "Úsalo cuando el usuario pregunte por consultas pasadas, análisis previos, "
+            "o quiera saber qué se analizó en una fecha específica. "
+            "Si se indica una fecha (formato YYYY-MM-DD), devuelve solo ese día. "
+            "Si no se indica fecha, devuelve los últimos 7 días."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "fecha": {
+                    "type": "string",
+                    "description": "Fecha en formato YYYY-MM-DD (ej: '2026-04-18'). Opcional — si se omite devuelve los últimos 7 días."
+                },
+                "ultimas_n": {
+                    "type": "integer",
+                    "description": "Número de consultas a mostrar por día. Default: 10.",
+                    "default": 10
+                }
+            },
+            "required": []
+        }
+    },
+    {
         "name": "get_fundamental_analysis",
         "description": (
             "Obtiene análisis fundamental completo de una acción desde Yahoo Finance. "
@@ -353,6 +379,7 @@ def execute_tool(tool_name: str, tool_input: dict) -> str:
         "analyze_watchlist":            analyze_watchlist,
         "screen_stocks":                screen_stocks,
         "get_fundamental_analysis":     get_fundamental_analysis,
+        "get_historial":                get_historial,
     }
 
     fn = dispatch.get(tool_name)
