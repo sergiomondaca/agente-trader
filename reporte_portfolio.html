@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portfolio Report</title>
+<style>
+  /* ── Variables ── */
+  :root {
+    --bg:        #0E1117;
+    --bg2:       #161B27;
+    --bg3:       #1E2535;
+    --border:    #2A3347;
+    --text:      #E2E8F0;
+    --muted:     #64748B;
+    --primary:   #4A9EFF;
+    --positive:  #22C55E;
+    --negative:  #EF4444;
+    --warning:   #F59E0B;
+    --font:      'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 40px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ── */
+  .report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 36px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .report-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .report-title span {
+    color: var(--primary);
+  }
+
+  .report-meta {
+    font-size: 0.82rem;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  /* ── KPI Cards ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .kpi-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 12px 12px 0 0;
+  }
+
+  .kpi-card.kpi-positive::before { background: var(--positive); }
+  .kpi-card.kpi-negative::before { background: var(--negative); }
+  .kpi-card.kpi-warning::before  { background: var(--warning); }
+
+  .kpi-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .kpi-value {
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .kpi-value.kpi-positive { color: var(--positive); }
+  .kpi-value.kpi-negative { color: var(--negative); }
+
+  .kpi-sub {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* ── Table wrapper ── */
+  .table-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table-toolbar-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .table-toolbar-sub {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+
+  /* ── Table ── */
+  .portfolio-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  .portfolio-table thead th {
+    background: var(--bg3);
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .portfolio-table thead th.num { text-align: right; }
+
+  .portfolio-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .portfolio-table tbody tr:last-child { border-bottom: none; }
+
+  .portfolio-table tbody tr:hover {
+    background: rgba(74, 158, 255, 0.04);
+  }
+
+  .portfolio-table td {
+    padding: 14px 18px;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .portfolio-table td.num   { text-align: right; font-variant-numeric: tabular-nums; }
+  .portfolio-table td.fecha { color: var(--muted); font-size: 0.8rem; }
+
+  /* ── Symbol chip ── */
+  .symbol-chip {
+    display: inline-block;
+    background: rgba(74,158,255,0.12);
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 3px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Nombre ── */
+  .nombre-col { color: #94A3B8; font-size: 0.83rem; max-width: 200px; }
+
+  /* ── Badge P&L ── */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+
+  .badge.positive { background: rgba(34,197,94,0.15); color: var(--positive); }
+  .badge.negative { background: rgba(239,68,68,0.15);  color: var(--negative); }
+  .badge.neutral  { background: rgba(100,116,139,0.15); color: var(--muted); }
+
+  /* ── P&L inline color ── */
+  .positive { color: var(--positive); font-weight: 600; }
+  .negative { color: var(--negative); font-weight: 600; }
+  .muted    { color: var(--muted); }
+
+  /* ── Footer ── */
+  .report-footer {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #374151;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 1200px) { body { padding: 20px; } }
+  @media (max-width: 900px) {
+    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    .nombre-col { display: none; }
+  }
+  @media (max-width: 600px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff; color: #000; padding: 16px; }
+    .kpi-card, .table-wrap { border: 1px solid #ddd; }
+    .portfolio-table tbody tr:hover { background: transparent; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="report-header">
+  <div>
+    <div class="report-title">📊 Portfolio <span>Report</span></div>
+    <div style="color:var(--muted); font-size:0.85rem; margin-top:4px;">Resumen de posiciones activas</div>
+  </div>
+  <div class="report-meta">
+    <div>Actualizado: <strong>22/04/2026 07:05</strong></div>
+    <div>Posiciones: <strong>17</strong> activos</div>
+    <div>Precios: TradingView (tiempo real)</div>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-label">Total invertido</div>
+    <div class="kpi-value">$74,814</div>
+    <div class="kpi-sub">Capital desplegado</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Valor actual</div>
+    <div class="kpi-value">$63,647</div>
+    <div class="kpi-sub">17 posiciones con precio</div>
+  </div>
+  <div class="kpi-card kpi-negative">
+    <div class="kpi-label">P&amp;L Total (USD)</div>
+    <div class="kpi-value kpi-negative">▼ $11,166</div>
+    <div class="kpi-sub">Pérdida no realizada</div>
+  </div>
+  <div class="kpi-card kpi-negative">
+    <div class="kpi-label">Retorno Total</div>
+    <div class="kpi-value kpi-negative">▼ 14.9%</div>
+    <div class="kpi-sub">Sobre capital invertido</div>
+  </div>
+  <div class="kpi-card kpi-warning">
+    <div class="kpi-label">Posiciones</div>
+    <div class="kpi-value">17</div>
+    <div class="kpi-sub" style="color:var(--positive)">▲ 1 ganadoras &nbsp;
+      <span style="color:var(--negative)">▼ 16 perdedoras</span>
+    </div>
+  </div>
+</div>
+
+<!-- Tabla -->
+<div class="table-wrap">
+  <div class="table-toolbar">
+    <div>
+      <div class="table-toolbar-title">Posiciones activas</div>
+      <div class="table-toolbar-sub">Ordenadas por P&amp;L % descendente</div>
+    </div>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:var(--positive)"></span>Ganancia</span>
+      <span><span class="legend-dot" style="background:var(--negative)"></span>Pérdida</span>
+    </div>
+  </div>
+
+  <table class="portfolio-table">
+    <thead>
+      <tr>
+        <th>Símbolo</th>
+        <th>Nombre</th>
+        <th class="num">Cantidad</th>
+        <th class="num">Precio entrada</th>
+        <th class="num">Precio actual</th>
+        <th class="num">Invertido</th>
+        <th class="num">Valor actual</th>
+        <th class="num">P&amp;L USD</th>
+        <th class="num">P&amp;L %</th>
+        <th>Entrada</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr>
+          <td><span class="symbol-chip">CB</span></td>
+          <td class="nombre-col">CB</td>
+          <td class="num">10</td>
+          <td class="num">$328.50</td>
+          <td class="num">$329.29</td>
+          <td class="num">$3,285.00</td>
+          <td class="num">$3,292.90</td>
+          <td class="num"><span class="positive">+$7.90</span></td>
+          <td class="num"><span class="badge positive">+0.24%</span></td>
+          <td class="fecha">2026-04-21</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">TSM</span></td>
+          <td class="nombre-col">Taiwan Semiconductor (ADR)</td>
+          <td class="num">13.45</td>
+          <td class="num">$371.60</td>
+          <td class="num">$368.08</td>
+          <td class="num">$4,998.02</td>
+          <td class="num">$4,950.68</td>
+          <td class="num"><span class="negative">$-47.34</span></td>
+          <td class="num"><span class="badge negative">-0.95%</span></td>
+          <td class="fecha">2026-04-17</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">UUUU</span></td>
+          <td class="nombre-col">Energy Fuels Inc. (Uranium)</td>
+          <td class="num">47.67</td>
+          <td class="num">$20.98</td>
+          <td class="num">$20.52</td>
+          <td class="num">$1,000.12</td>
+          <td class="num">$978.19</td>
+          <td class="num"><span class="negative">$-21.93</span></td>
+          <td class="num"><span class="badge negative">-2.19%</span></td>
+          <td class="fecha">2026-04-15</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">NU</span></td>
+          <td class="nombre-col">Nu Holdings (Fintech)</td>
+          <td class="num">129.55</td>
+          <td class="num">$15.44</td>
+          <td class="num">$15.05</td>
+          <td class="num">$2,000.25</td>
+          <td class="num">$1,949.73</td>
+          <td class="num"><span class="negative">$-50.52</span></td>
+          <td class="num"><span class="badge negative">-2.53%</span></td>
+          <td class="fecha">2026-04-16</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">ACN</span></td>
+          <td class="nombre-col">Accenture plc</td>
+          <td class="num">15.03</td>
+          <td class="num">$199.52</td>
+          <td class="num">$194.42</td>
+          <td class="num">$2,998.79</td>
+          <td class="num">$2,922.13</td>
+          <td class="num"><span class="negative">$-76.66</span></td>
+          <td class="num"><span class="badge negative">-2.56%</span></td>
+          <td class="fecha">2026-04-02</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">SE</span></td>
+          <td class="nombre-col">SE</td>
+          <td class="num">22</td>
+          <td class="num">$92.18</td>
+          <td class="num">$86.83</td>
+          <td class="num">$2,027.96</td>
+          <td class="num">$1,910.26</td>
+          <td class="num"><span class="negative">$-117.70</span></td>
+          <td class="num"><span class="badge negative">-5.80%</span></td>
+          <td class="fecha">2026-04-21</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">IBIT</span></td>
+          <td class="nombre-col">iShares Bitcoin Trust ETF</td>
+          <td class="num">327.41</td>
+          <td class="num">$45.81</td>
+          <td class="num">$42.51</td>
+          <td class="num">$14,998.65</td>
+          <td class="num">$13,918.20</td>
+          <td class="num"><span class="negative">$-1,080.45</span></td>
+          <td class="num"><span class="badge negative">-7.20%</span></td>
+          <td class="fecha">2025-11-02</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">SMR</span></td>
+          <td class="nombre-col">SMR</td>
+          <td class="num">164</td>
+          <td class="num">$12.77</td>
+          <td class="num">$11.67</td>
+          <td class="num">$2,094.28</td>
+          <td class="num">$1,913.88</td>
+          <td class="num"><span class="negative">$-180.40</span></td>
+          <td class="num"><span class="badge negative">-8.61%</span></td>
+          <td class="fecha">2026-04-21</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">NFLX</span></td>
+          <td class="nombre-col">Netflix</td>
+          <td class="num">81.92</td>
+          <td class="num">$104.70</td>
+          <td class="num">$92.58</td>
+          <td class="num">$8,577.02</td>
+          <td class="num">$7,584.15</td>
+          <td class="num"><span class="negative">$-992.87</span></td>
+          <td class="num"><span class="badge negative">-11.58%</span></td>
+          <td class="fecha">2026-11-25</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">DXYZ</span></td>
+          <td class="nombre-col">Destiny Tech100</td>
+          <td class="num">89.59</td>
+          <td class="num">$33.49</td>
+          <td class="num">$29.12</td>
+          <td class="num">$3,000.37</td>
+          <td class="num">$2,608.86</td>
+          <td class="num"><span class="negative">$-391.51</span></td>
+          <td class="num"><span class="badge negative">-13.05%</span></td>
+          <td class="fecha">2026-03-25</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">PLTR</span></td>
+          <td class="nombre-col">Palantir Technologies</td>
+          <td class="num">15</td>
+          <td class="num">$170.69</td>
+          <td class="num">$145.97</td>
+          <td class="num">$2,560.35</td>
+          <td class="num">$2,189.55</td>
+          <td class="num"><span class="negative">$-370.80</span></td>
+          <td class="num"><span class="badge negative">-14.48%</span></td>
+          <td class="fecha">2025-09-05</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">GDX</span></td>
+          <td class="nombre-col">VanEck Gold Miners ETF</td>
+          <td class="num">100</td>
+          <td class="num">$109.21</td>
+          <td class="num">$92.99</td>
+          <td class="num">$10,921.00</td>
+          <td class="num">$9,299.00</td>
+          <td class="num"><span class="negative">$-1,622.00</span></td>
+          <td class="num"><span class="badge negative">-14.85%</span></td>
+          <td class="fecha">2026-03-03</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">IONQ</span></td>
+          <td class="nombre-col">IonQ Inc. (Quantum Computing)</td>
+          <td class="num">75.39</td>
+          <td class="num">$66.32</td>
+          <td class="num">$46.28</td>
+          <td class="num">$4,999.86</td>
+          <td class="num">$3,489.05</td>
+          <td class="num"><span class="negative">$-1,510.81</span></td>
+          <td class="num"><span class="badge negative">-30.22%</span></td>
+          <td class="fecha">2025-10-16</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">COIN</span></td>
+          <td class="nombre-col">Coinbase Global</td>
+          <td class="num">9.42</td>
+          <td class="num">$318.49</td>
+          <td class="num">$195.95</td>
+          <td class="num">$3,000.18</td>
+          <td class="num">$1,845.85</td>
+          <td class="num"><span class="negative">$-1,154.33</span></td>
+          <td class="num"><span class="badge negative">-38.48%</span></td>
+          <td class="fecha">2025-11-10</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">ORCL</span></td>
+          <td class="nombre-col">Oracle Corporation</td>
+          <td class="num">18</td>
+          <td class="num">$298.24</td>
+          <td class="num">$181.17</td>
+          <td class="num">$5,368.32</td>
+          <td class="num">$3,261.06</td>
+          <td class="num"><span class="negative">$-2,107.26</span></td>
+          <td class="num"><span class="badge negative">-39.25%</span></td>
+          <td class="fecha">2025-10-29</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">OKLO</span></td>
+          <td class="nombre-col">Oklo Inc. (Nuclear Energy)</td>
+          <td class="num">16.3</td>
+          <td class="num">$121.70</td>
+          <td class="num">$62.61</td>
+          <td class="num">$1,983.71</td>
+          <td class="num">$1,020.54</td>
+          <td class="num"><span class="negative">$-963.17</span></td>
+          <td class="num"><span class="badge negative">-48.55%</span></td>
+          <td class="fecha">2025-11-05</td>
+        </tr>
+        <tr>
+          <td><span class="symbol-chip">SMCI</span></td>
+          <td class="nombre-col">Super Micro Computer</td>
+          <td class="num">18.05</td>
+          <td class="num">$55.39</td>
+          <td class="num">$28.43</td>
+          <td class="num">$999.79</td>
+          <td class="num">$513.16</td>
+          <td class="num"><span class="negative">$-486.63</span></td>
+          <td class="num"><span class="badge negative">-48.67%</span></td>
+          <td class="fecha">2025-10-21</td>
+        </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="report-footer">
+  Generado con Agente Trader · 22/04/2026 07:05 · Datos: TradingView
+</div>
+
+</body>
+</html>

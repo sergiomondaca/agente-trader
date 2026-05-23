@@ -13,6 +13,51 @@ from tradingview_ta import TA_Handler, Interval as TVInterval
 
 
 # ─────────────────────────────────────────────────────────────
+# HERRAMIENTA 0: Health Check de TradingView
+# ─────────────────────────────────────────────────────────────
+def tv_health_check() -> dict:
+    """
+    Verifica que la conexión con TradingView (tradingview-ta) funciona correctamente.
+    Hace una consulta de prueba con BTCUSDT en Binance (1D) y mide la latencia.
+    """
+    import time
+
+    test_symbol   = "BTCUSDT"
+    test_exchange = "BINANCE"
+    test_screener = "crypto"
+
+    try:
+        start = time.time()
+        handler = TA_Handler(
+            symbol=test_symbol,
+            screener=test_screener,
+            exchange=test_exchange,
+            interval=TVInterval.INTERVAL_1_DAY,
+        )
+        analysis = handler.get_analysis()
+        latency_ms = round((time.time() - start) * 1000)
+
+        price = analysis.indicators.get("close")
+        rec   = analysis.summary.get("RECOMMENDATION", "N/A")
+
+        return {
+            "status":      "OK",
+            "mensaje":     "TradingView conectado correctamente.",
+            "latencia_ms": latency_ms,
+            "simbolo_test": f"{test_symbol} ({test_exchange})",
+            "precio_actual": round(price, 2) if price else None,
+            "señal_actual":  rec,
+        }
+
+    except Exception as e:
+        return {
+            "status":  "ERROR",
+            "mensaje": "No se pudo conectar con TradingView.",
+            "detalle": str(e),
+        }
+
+
+# ─────────────────────────────────────────────────────────────
 # Datos históricos OHLCV vía Yahoo Finance (yfinance)
 # ─────────────────────────────────────────────────────────────
 _COMMODITY_MAP = {
@@ -1062,6 +1107,185 @@ def get_historial(fecha: str = None, ultimas_n: int = 10) -> dict:
         "total_dias": len(resultado),
     }
 
+
+# ─────────────────────────────────────────────────────────────
+# HERRAMIENTA 10: Control de TradingView vía CDP
+# ─────────────────────────────────────────────────────────────
+_CHART_API = "window.TradingViewApi._activeChartWidgetWV.value()"
+_CDP_URL   = "http://localhost:9222"
+
+
+def _cdp_evaluate(expression: str, await_promise: bool = False):
+    """Ejecuta JavaScript en TradingView via CDP. Sincrónico (usa asyncio.run)."""
+    import asyncio
+    import websockets
+
+    async def _run():
+        try:
+            targets = __import__("requests").get(f"{_CDP_URL}/json/list", timeout=3).json()
+        except Exception as e:
+            raise RuntimeError(f"No se puede conectar al CDP (puerto 9222): {e}")
+
+        target = next(
+            (t for t in targets if "tradingview.com/chart" in t.get("url", "")), None
+        )
+        if not target:
+            raise RuntimeError("TradingView no está abierto en Brave con --remote-debugging-port=9222")
+
+        async with websockets.connect(target["webSocketDebuggerUrl"]) as ws:
+            await ws.send(json.dumps({
+                "id": 1,
+                "method": "Runtime.evaluate",
+                "params": {
+                    "expression":   expression,
+                    "returnByValue": True,
+                    "awaitPromise":  await_promise,
+                },
+            }))
+            resp = json.loads(await ws.recv())
+
+        if "exceptionDetails" in resp.get("result", {}):
+            exc = resp["result"]["exceptionDetails"]
+            msg = (exc.get("exception", {}).get("description")
+                   or exc.get("text", "Error JS desconocido"))
+            raise RuntimeError(f"Error JS en TradingView: {msg}")
+
+        return resp.get("result", {}).get("result", {}).get("value")
+
+    return asyncio.run(_run())
+
+
+def switch_tv_chart(symbol: str) -> dict:
+    """Cambia el símbolo del gráfico en TradingView."""
+    sym = symbol.upper().strip()
+    _cdp_evaluate(f"""
+(function() {{
+    return new Promise(function(resolve) {{
+        {_CHART_API}.setSymbol('{sym}', {{}});
+        setTimeout(resolve, 600);
+    }});
+}})()
+""", await_promise=True)
+    return {"success": True, "symbol": sym, "mensaje": f"Gráfico cambiado a {sym}"}
+
+
+def draw_tv_line(
+    symbol: str,
+    price: float,
+    label: str = None,
+    color: str = "#FF9800",
+) -> dict:
+    """
+    Dibuja una línea horizontal en el gráfico de TradingView.
+    Cambia automáticamente al símbolo indicado antes de dibujar.
+    """
+    import time
+
+    sym   = symbol.upper().strip()
+    label = label or f"Entrada ${price:.2f}"
+
+    # Cambiar símbolo primero
+    switch_tv_chart(sym)
+    import time as _time; _time.sleep(0.8)
+
+    ts        = int(time.time())
+    overrides = json.dumps({"linecolor": color, "linewidth": 2, "linestyle": 1})
+    label_js  = json.dumps(label)
+
+    before = _cdp_evaluate(
+        f"{_CHART_API}.getAllShapes().map(function(s) {{ return s.id; }})"
+    ) or []
+
+    _cdp_evaluate(f"""
+(function() {{
+    {_CHART_API}.createShape(
+        {{ time: {ts}, price: {price} }},
+        {{ shape: 'horizontal_line', overrides: {overrides}, text: {label_js} }}
+    );
+}})()
+""")
+
+    import time as _t; _t.sleep(0.3)
+    after = _cdp_evaluate(
+        f"{_CHART_API}.getAllShapes().map(function(s) {{ return s.id; }})"
+    ) or []
+
+    new_ids   = [i for i in after if i not in before]
+    entity_id = new_ids[0] if new_ids else None
+
+    return {
+        "success":   True,
+        "symbol":    sym,
+        "price":     price,
+        "label":     label,
+        "entity_id": entity_id,
+        "mensaje":   f"Linea '{label}' dibujada en {sym} a ${price:.2f}",
+    }
+
+
+# ─────────────────────────────────────────────────────────────
+# HERRAMIENTA 11: Edición del portfolio
+# ─────────────────────────────────────────────────────────────
+def update_portfolio_position(
+    action: str,
+    symbol: str,
+    cantidad: float = None,
+    precio_promedio: float = None,
+    nombre: str = None,
+    exchange: str = None,
+    notas: str = None,
+) -> dict:
+    """
+    Agrega, edita o elimina una posición en portfolio.json.
+    action: 'add' | 'edit' | 'remove'
+    """
+    from pathlib import Path
+    from datetime import datetime as _dt
+
+    portfolio_path = Path(_find_portfolio_path())
+    pf = json.loads(portfolio_path.read_text(encoding="utf-8"))
+    positions = pf.get("positions", [])
+    sym = symbol.upper().strip()
+
+    if action == "remove":
+        original = len(positions)
+        pf["positions"] = [p for p in positions if p["symbol"] != sym]
+        if len(pf["positions"]) == original:
+            return {"success": False, "error": f"{sym} no encontrado en positions"}
+
+    elif action == "add":
+        if any(p["symbol"] == sym for p in positions):
+            return {"success": False, "error": f"{sym} ya existe — usa 'edit' para modificarlo"}
+        pf["positions"].append({
+            "symbol":          sym,
+            "exchange":        exchange or "NYSE",
+            "screener":        "america",
+            "nombre":          nombre or sym,
+            "cantidad":        cantidad or 0,
+            "precio_promedio": precio_promedio or 0,
+            "fecha_entrada":   _dt.now().strftime("%Y-%m-%d"),
+            "notas":           notas or "",
+        })
+
+    elif action == "edit":
+        found = False
+        for p in pf["positions"]:
+            if p["symbol"] == sym:
+                found = True
+                if cantidad        is not None: p["cantidad"]        = cantidad
+                if precio_promedio is not None: p["precio_promedio"] = precio_promedio
+                if nombre          is not None: p["nombre"]          = nombre
+                if exchange        is not None: p["exchange"]        = exchange
+                if notas           is not None: p["notas"]           = notas
+                break
+        if not found:
+            return {"success": False, "error": f"{sym} no encontrado en positions"}
+
+    else:
+        return {"success": False, "error": f"action debe ser 'add', 'edit' o 'remove' (recibido: '{action}')"}
+
+    portfolio_path.write_text(json.dumps(pf, indent=2, ensure_ascii=False), encoding="utf-8")
+    return {"success": True, "action": action, "symbol": sym, "total_positions": len(pf["positions"])}
 
 # ─────────────────────────────────────────────────────────────
 # HERRAMIENTA 10: Análisis Fundamental (Yahoo Finance)

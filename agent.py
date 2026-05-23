@@ -24,6 +24,9 @@ from tools import (
     screen_stocks,
     get_fundamental_analysis,
     get_historial,
+    switch_tv_chart,
+    draw_tv_line,
+    update_portfolio_position,
 )
 
 load_dotenv()
@@ -266,6 +269,58 @@ TOOLS = [
         }
     },
     {
+        "name": "switch_tv_chart",
+        "description": (
+            "Cambia el símbolo del gráfico activo en TradingView. "
+            "Requiere que Brave esté abierto con --remote-debugging-port=9222."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "symbol": {"type": "string", "description": "Símbolo a mostrar (ej: AAPL, PLTR, OKLO)."},
+            },
+            "required": ["symbol"],
+        },
+    },
+    {
+        "name": "draw_tv_line",
+        "description": (
+            "Dibuja una línea horizontal en el gráfico de TradingView. "
+            "Útil para marcar entradas, stops, soportes y resistencias. "
+            "Cambia automáticamente al símbolo antes de dibujar."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "symbol": {"type": "string", "description": "Símbolo donde dibujar la línea."},
+                "price":  {"type": "number",  "description": "Precio de la línea horizontal."},
+                "label":  {"type": "string",  "description": "Etiqueta de la línea (ej: 'Stop Loss $45.00', 'Entrada $120'). Opcional."},
+                "color":  {"type": "string",  "description": "Color hex. Naranja #FF9800 (entrada), Rojo #F44336 (stop), Verde #4CAF50 (objetivo). Default: #FF9800."},
+            },
+            "required": ["symbol", "price"],
+        },
+    },
+    {
+        "name": "update_portfolio_position",
+        "description": (
+            "Agrega, edita o elimina una posición en portfolio.json. "
+            "Usa 'add' para nueva posición, 'edit' para actualizar cantidad/precio, 'remove' para eliminar."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "action":          {"type": "string", "enum": ["add", "edit", "remove"], "description": "Acción a realizar."},
+                "symbol":          {"type": "string", "description": "Símbolo del activo (ej: AAPL)."},
+                "cantidad":        {"type": "number", "description": "Número de acciones/unidades."},
+                "precio_promedio": {"type": "number", "description": "Precio promedio de compra."},
+                "nombre":          {"type": "string", "description": "Nombre completo de la empresa."},
+                "exchange":        {"type": "string", "description": "Exchange: NYSE, NASDAQ, AMEX."},
+                "notas":           {"type": "string", "description": "Notas adicionales sobre la posición."},
+            },
+            "required": ["action", "symbol"],
+        },
+    },
+    {
         "name": "screen_stocks",
         "description": (
             "Escanea el mercado americano con Finviz para encontrar oportunidades de trading según una estrategia. "
@@ -380,6 +435,9 @@ def execute_tool(tool_name: str, tool_input: dict) -> str:
         "screen_stocks":                screen_stocks,
         "get_fundamental_analysis":     get_fundamental_analysis,
         "get_historial":                get_historial,
+        "switch_tv_chart":              switch_tv_chart,
+        "draw_tv_line":                 draw_tv_line,
+        "update_portfolio_position":    update_portfolio_position,
     }
 
     fn = dispatch.get(tool_name)
